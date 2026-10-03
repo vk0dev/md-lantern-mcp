@@ -1,6 +1,6 @@
 ---
 name: publish-report
-description: Publish long reports to md.vk0.dev; send only the link.
+description: Long reply or table for Telegram? Publish it, send a link.
 version: 1.0.0
 author: vk0.dev
 platforms: [macos]
@@ -44,7 +44,8 @@ Publish and send the link if at least one of these holds:
    Useful flags:
    - `--title "…"`: when the `#` heading isn't the right title.
    - `--style docs`: technical text, runbooks, many tables. `--style book`: long prose. Otherwise leave the default (`clean`).
-   - `--expires 30d`: for throwaway diagnostics and debug dumps. Without it the page is permanent.
+   - `--expires 30d`: **default for a reply in chat**: summaries, status answers, diagnostics, debug dumps. They are read now and are not needed in a month.
+     Without `--expires` the page is permanent; that is for documents vk will come back to (a runbook, an analysis he asked to keep, rules, an agreement) and for `--as`.
    - `--as <name>`: **one stable link for a recurring or living document** (e.g. `--as factory-status`, `--as weekly-review`). A repeat call with the same name updates the same page in place. The link stays the same, and earlier versions remain in its public history. `<name>` is lowercase latin, digits and `-`.
 3. **Send a short message**: 2–5 lines in Russian. Say what this is, give 1–3 key takeaways (numbers, decisions, what is needed from vk), and put the link on its own line. Copy the URL from the command output exactly, without changing it.
 
