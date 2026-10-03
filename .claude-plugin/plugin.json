@@ -1,0 +1,13 @@
+{
+  "name": "@vk0/md-lantern-mcp",
+  "mcpName": "io.github.vk0dev/md-lantern-mcp",
+  "version": "0.1.0",
+  "description": "Publish markdown from your AI agent or shell as a clean page with a permanent link on an MD Lantern server. MCP server plus the mdl CLI.",
+  "author": {
+    "name": "vk0.dev",
+    "url": "https://github.com/vk0dev"
+  },
+  "homepage": "https://vk0dev.github.io/md-lantern-mcp",
+  "repository": "https://github.com/vk0dev/md-lantern-mcp",
+  "category": "developer-tools"
+}
