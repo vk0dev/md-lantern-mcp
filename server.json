@@ -1,17 +1,17 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.vk0dev/md-lantern-mcp",
-  "description": "Publish markdown from your AI agent or shell as a clean page with a permanent link on an MD Lantern server. MCP server plus the mdl CLI.",
+  "description": "Publish markdown as shareable pages from your AI agent or shell via MCP and the mdl CLI.",
   "repository": {
     "url": "https://github.com/vk0dev/md-lantern-mcp",
     "source": "github"
   },
-  "version": "0.1.0",
+  "version": "1.0.0",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "@vk0/md-lantern-mcp",
-      "version": "0.1.0",
+      "version": "1.0.0",
       "transport": {
         "type": "stdio"
       }
