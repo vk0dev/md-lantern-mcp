@@ -1,7 +1,7 @@
 {
   "name": "@vk0/md-lantern-mcp",
-  "version": "0.1.0",
-  "description": "Publish markdown from your AI agent or shell as a clean page with a permanent link on an MD Lantern server. MCP server plus the mdl CLI.",
+  "version": "1.0.0",
+  "description": "Publish markdown as shareable pages from your AI agent or shell via MCP and the mdl CLI.",
   "mcpName": "io.github.vk0dev/md-lantern-mcp",
   "type": "module",
   "main": "dist/index.js",
@@ -13,7 +13,8 @@
     "CHANGELOG.md"
   ],
   "bin": {
-    "md-lantern-mcp": "./dist/cli.js"
+    "md-lantern-mcp": "./dist/server.js",
+    "mdl": "./dist/cli.js"
   },
   "scripts": {
     "build": "rm -rf dist && tsc -p tsconfig.json",
@@ -31,7 +32,12 @@
     "claude-code",
     "anthropic",
     "ai-agent",
-    "developer-tools"
+    "developer-tools",
+    "markdown",
+    "publish",
+    "share",
+    "pastebin",
+    "cli"
   ],
   "author": "vk0.dev",
   "license": "MIT",

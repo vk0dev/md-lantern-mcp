@@ -1,2 +1,2 @@
-export { registerTools } from './tools/hello.js';
 export { createServer, createSandboxServer } from './createServer.js';
+export { registerTools } from './tools/index.js';
