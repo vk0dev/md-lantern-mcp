@@ -102,6 +102,19 @@ await step('cli: a readable link works as a page reference', async () => {
   // A slug URL this machine never published, read with another key.
   const gb = await run(['get', pSlugUrl], { env: envB });
   ok(gb.code === 0 && gb.stdout.includes('Договор, цены и сроки.'), 'another machine/key can read by the slug URL too');
+  const vb = await run(['versions', pSlugUrl], { env: envB });
+  ok(vb.code === 0 && lines(vb.stdout).length >= 2, 'versions by the slug URL from a machine with no local record');
+  // pages.json is keyed by token: a slug reference must never be stored as one.
+  const store = JSON.parse(fs.readFileSync(path.join(envA.MD_LANTERN_CONFIG_DIR, 'pages.json'), 'utf8'));
+  const entries = Array.isArray(store.pages) ? store.pages : [];
+  ok(!entries.some((p) => p.token === 'kak-rabotaem'), 'pages.json holds no entry with the slug as its token');
+  ok(entries.filter((p) => p.url === pSlugUrl).length === 1, 'pages.json holds exactly one entry for the slugged page');
+  // A bare slug, with a key, on a machine that never saw the page.
+  const tmpSlug = await run([write('# Временная\n'), '--slug', 'vremennaya'], { env: envA });
+  const rmb = await run(['rm', 'vremennaya'], { env: envA });
+  ok(tmpSlug.code === 0 && rmb.code === 0 && (await raw(srv.port, 'GET', '/vremennaya')).status === 404, 'rm by a bare slug removes the page');
+  const after = JSON.parse(fs.readFileSync(path.join(envA.MD_LANTERN_CONFIG_DIR, 'pages.json'), 'utf8'));
+  ok(!(after.pages || []).some((p) => p.url === `${BASE}/vremennaya` || p.token === 'vremennaya'), '…and forgets it locally');
 });
 
 await step('cli: mdl slug sets, renames and clears a page link', async () => {

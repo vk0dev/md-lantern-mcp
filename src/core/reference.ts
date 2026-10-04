@@ -1,5 +1,5 @@
 import { UsageError } from './errors.js';
-import { lookupByName } from './pagesStore.js';
+import { lookupByName, lookupByToken } from './pagesStore.js';
 import type { PagesStoreData } from './pagesStore.js';
 
 export const NAME_PATTERN = /^[a-z0-9][a-z0-9._-]{0,63}$/;
@@ -26,6 +26,7 @@ export interface ResolvedRef {
 }
 
 const URL_TOKEN_PATTERN = /^(https?:\/\/[^/]+)\/p\/([A-Za-z0-9_-]{8,64})(?:[./].*)?$/;
+const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const URL_SLUG_PATTERN = /^(https?:\/\/[^/]+)\/([a-z0-9][a-z0-9-]*)(?:\.md)?$/;
 
 /** Strips `.md`, `/history`, `/v/<n>`, `/v/<n>.md`, `/v/<n>/changes`, query and hash suffixes. */
@@ -85,6 +86,11 @@ export function resolvePageRef(arg: string, { base, store, hasKey }: ResolveRefI
 
   const byName = lookupByName(store, base, arg);
   if (byName) return { token: byName.token };
+
+  // A bare string this machine has no record of may be a page slug rather than a token
+  // (both shapes overlap). With a key, flag it so the caller asks the server, which
+  // tries it as a token first and as a slug second, and gets the real token back.
+  if (hasKey && SLUG_PATTERN.test(arg) && !lookupByToken(store, base, arg)) return { token: arg, isSlug: true };
 
   if (isBareToken(arg)) return { token: arg };
 

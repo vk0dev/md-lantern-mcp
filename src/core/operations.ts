@@ -32,6 +32,25 @@ import {
 import type { PageEntry } from './pagesStore.js';
 import { isValidName, resolveCollectionRef, resolvePageRef, resolvePageRefForServer } from './reference.js';
 
+/**
+ * Turns a page reference into the page's real token. A slug reference (a `BASE/<slug>`
+ * link, or a bare slug this machine has no record of) is resolved by one keyed
+ * `GET /api/v1/pages/<slug>`; everything else is already a token. Callers key
+ * `pages.json` off the result, so a slug must never be stored as if it were a token.
+ */
+async function resolveToken(
+  pageRef: string,
+  ctx: ResolvedConfig,
+  store: ReturnType<typeof loadPagesStore>,
+): Promise<{ token: string; warning?: string }> {
+  const resolved = resolvePageRef(pageRef, { base: ctx.url, store, hasKey: !!ctx.apiKey });
+  if (resolved.isSlug && ctx.apiKey) {
+    const meta = await apiGet(ctx.url, ctx.apiKey, resolved.token);
+    if (typeof meta.token === 'string') return { token: meta.token, warning: resolved.warning };
+  }
+  return { token: resolved.token, warning: resolved.warning };
+}
+
 export type Action = 'created' | 'updated' | 'unchanged';
 
 export interface OperationResult extends Record<string, unknown> {
@@ -239,7 +258,7 @@ export async function update(
 ): Promise<UpdateResult> {
   if (opts.slug !== undefined && !ctx.apiKey) throw keyRequiredError();
   const store = loadPagesStore(ctx.pagesFile);
-  const { token, warning } = resolvePageRef(pageRef, { base: ctx.url, store, hasKey: !!ctx.apiKey });
+  const { token, warning } = await resolveToken(pageRef, ctx, store);
   try {
     const result = await updateToken(token, markdown, opts, ctx);
     return { result, warning };
@@ -305,7 +324,7 @@ export async function get(pageRef: string, ctx: ResolvedConfig): Promise<GetOutc
 export async function setSlug(pageRef: string, slug: string | null, ctx: ResolvedConfig): Promise<UpdateResult> {
   const apiKey = requireKey(ctx);
   const store = loadPagesStore(ctx.pagesFile);
-  const resolved = resolvePageRef(pageRef, { base: ctx.url, store, hasKey: true });
+  const resolved = await resolveToken(pageRef, ctx, store);
   const page = await apiUpdate(ctx.url, apiKey, resolved.token, { slug });
 
   const realToken = typeof page.token === 'string' ? page.token : resolved.token;
@@ -351,7 +370,7 @@ export async function listVersions(pageRef: string, ctx: ResolvedConfig): Promis
     throw new ApiError(0, 'key_required', 'listing versions requires an API key (set MD_LANTERN_API_KEY or run "mdl config set-key")');
   }
   const store = loadPagesStore(ctx.pagesFile);
-  const { token } = resolvePageRef(pageRef, { base: ctx.url, store });
+  const { token } = await resolveToken(pageRef, ctx, store);
   const res = await apiVersions(ctx.url, ctx.apiKey, token);
   return { versions: res.versions };
 }
@@ -362,7 +381,7 @@ export interface RemoveOutcome {
 
 export async function remove(pageRef: string, ctx: ResolvedConfig): Promise<RemoveOutcome> {
   const store = loadPagesStore(ctx.pagesFile);
-  const { token, warning } = resolvePageRef(pageRef, { base: ctx.url, store });
+  const { token, warning } = await resolveToken(pageRef, ctx, store);
   const entry = lookupByToken(store, ctx.url, token);
   try {
     if (ctx.apiKey) {
@@ -456,15 +475,9 @@ export async function addToCollection(
 export async function removeFromCollection(colRef: string, pageRef: string, ctx: ResolvedConfig): Promise<void> {
   const apiKey = requireKey(ctx);
   const store = loadPagesStore(ctx.pagesFile);
-  const resolved = resolvePageRef(pageRef, { base: ctx.url, store, hasKey: true });
   // DELETE .../pages/<token> keys off the literal token, unlike the other collection
-  // routes that accept any page-reference form — resolve a slug reference the rest
-  // of the way here instead of sending it as-is.
-  let token = resolved.token;
-  if (resolved.isSlug) {
-    const meta = await apiGet(ctx.url, apiKey, token);
-    token = typeof meta.token === 'string' ? meta.token : token;
-  }
+  // routes that accept any page-reference form.
+  const { token } = await resolveToken(pageRef, { ...ctx, apiKey }, store);
   await apiRemoveCollectionPage(ctx.url, apiKey, resolveCollectionRef(colRef), token);
 }
 
