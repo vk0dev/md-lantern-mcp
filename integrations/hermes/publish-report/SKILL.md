@@ -37,6 +37,7 @@ Publish and send the link if at least one of these holds:
    - `# Heading`: it becomes the page title and the card title in Telegram.
    - **The first paragraph** is 1–2 sentences with the gist and the key numbers. It becomes the link preview text (up to ~160 characters), so it must make sense on its own.
    - Then `##` sections, lists and tables. Normal markdown: GFM tables, task lists and code with highlighting all work.
+   - Also supported: footnotes for sources (`claim[^1]` … `[^1]: source`), math (`$x^2$` inline, `$$…$$` or a ```` ```math ```` block; prices like "$5" stay text) and diagrams in a ```` ```mermaid ```` block (flowcharts, sequence diagrams). Use a diagram when a flow or a dependency is easier to see than to read.
 2. **Publish** with the bundled script. It prints only the URL to stdout:
    ```bash
    bash ~/.hermes/skills/productivity/publish-report/scripts/mdl.sh ~/.hermes/tmp/report-<topic>.md
