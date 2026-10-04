@@ -63,7 +63,7 @@ let t1Url;
 
 await step('package metadata', async () => {
   ok(pkg.name === '@vk0/md-lantern-mcp', 'package name is @vk0/md-lantern-mcp');
-  ok(pkg.version === '1.0.0', 'first release is 1.0.0');
+  ok(/^1\.\d+\.\d+$/.test(pkg.version), 'a 1.x release');
   ok(pkg.bin && pkg.bin.mdl && pkg.bin['md-lantern-mcp'], 'two bins: mdl and md-lantern-mcp');
   ok(pkg.mcpName === 'io.github.vk0dev/md-lantern-mcp', 'mcpName');
   ok(Array.isArray(pkg.keywords) && pkg.keywords.length >= 10, 'keywords >= 10');
