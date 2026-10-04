@@ -79,6 +79,20 @@ export function describeApiError(code: string, extra: Record<string, unknown> = 
       return 'this operation requires an API key (set MD_LANTERN_API_KEY or run "mdl config set-key")';
     case 'manage_token_required':
       return 'no manage token known for this page on this machine; publish it from here first';
+    case 'bad_slug':
+      return 'the slug is invalid: 3-60 lowercase letters/digits/hyphens, no leading/trailing/double hyphen, and not a reserved word';
+    case 'slug_taken':
+      return 'that slug is already in use by another page or collection; choose a different one';
+    case 'collection_not_found':
+      return 'that collection does not exist; check the slug or collection URL';
+    case 'title_required':
+      return 'a non-empty title is required';
+    case 'bad_intro':
+      return 'intro must be a markdown string';
+    case 'bad_sort':
+      return 'sort must be one of manual or newest';
+    case 'bad_pages':
+      return 'one of the given pages could not be resolved; check the token, URL, or slug';
     default:
       return `request failed with ${code}`;
   }

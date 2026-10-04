@@ -106,6 +106,11 @@ export async function apiPublish(base: string, apiKey: string, body: Record<stri
   return res.json as ServerPage;
 }
 
+export async function apiGet(base: string, apiKey: string, ref: string): Promise<ServerPage> {
+  const res = await send(base, 'GET', `/api/v1/pages/${encodeURIComponent(ref)}`, { apiKey });
+  return res.json as ServerPage;
+}
+
 export async function apiUpdate(
   base: string,
   apiKey: string,
@@ -161,4 +166,65 @@ export async function anonDelete(base: string, token: string, manageToken: strin
 export async function getSource(base: string, token: string): Promise<SourcePage> {
   const res = await send(base, 'GET', `/p/${encodeURIComponent(token)}/source.json`);
   return res.json as SourcePage;
+}
+
+export interface Collection {
+  slug: string;
+  url: string;
+  rawUrl?: string;
+  title?: string;
+  intro?: string;
+  style?: string;
+  sort?: string;
+  pageCount?: number;
+  pages?: ServerPage[];
+  createdAt?: string;
+  updatedAt?: string;
+  [key: string]: unknown;
+}
+
+export async function apiCreateCollection(base: string, apiKey: string, body: Record<string, unknown>): Promise<Collection> {
+  const res = await send(base, 'POST', '/api/v1/collections', { apiKey, body });
+  return res.json as Collection;
+}
+
+export async function apiListCollections(
+  base: string,
+  apiKey: string,
+): Promise<{ collections: Collection[]; [key: string]: unknown }> {
+  const res = await send(base, 'GET', '/api/v1/collections', { apiKey });
+  return res.json as { collections: Collection[]; [key: string]: unknown };
+}
+
+export async function apiGetCollection(base: string, apiKey: string, slug: string): Promise<Collection> {
+  const res = await send(base, 'GET', `/api/v1/collections/${encodeURIComponent(slug)}`, { apiKey });
+  return res.json as Collection;
+}
+
+export async function apiUpdateCollection(
+  base: string,
+  apiKey: string,
+  slug: string,
+  body: Record<string, unknown>,
+): Promise<Collection> {
+  const res = await send(base, 'PUT', `/api/v1/collections/${encodeURIComponent(slug)}`, { apiKey, body });
+  return res.json as Collection;
+}
+
+export async function apiAddCollectionPage(
+  base: string,
+  apiKey: string,
+  slug: string,
+  body: Record<string, unknown>,
+): Promise<Collection> {
+  const res = await send(base, 'POST', `/api/v1/collections/${encodeURIComponent(slug)}/pages`, { apiKey, body });
+  return res.json as Collection;
+}
+
+export async function apiRemoveCollectionPage(base: string, apiKey: string, slug: string, token: string): Promise<void> {
+  await send(base, 'DELETE', `/api/v1/collections/${encodeURIComponent(slug)}/pages/${encodeURIComponent(token)}`, { apiKey });
+}
+
+export async function apiDeleteCollection(base: string, apiKey: string, slug: string): Promise<void> {
+  await send(base, 'DELETE', `/api/v1/collections/${encodeURIComponent(slug)}`, { apiKey });
 }

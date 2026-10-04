@@ -79,4 +79,53 @@ describe('parseArgs', () => {
     expect(parseArgs(['config', 'set-key', 'mdl_x'], noFiles)).toEqual({ command: 'config', action: 'set-key', value: 'mdl_x' });
     expect(() => parseArgs(['config', 'bogus'], noFiles)).toThrow(UsageError);
   });
+
+  it('parses publish with --slug and --collection', () => {
+    const parsed = parseArgs(['publish', '-', '--slug', 's', '--collection', 'c'], noFiles);
+    expect(parsed).toMatchObject({ command: 'publish', slug: 's', collection: 'c' });
+  });
+
+  it('parses slug rename, clear, and requires a slug or --clear', () => {
+    expect(parseArgs(['slug', 'PAGE', 'new-slug'], noFiles)).toEqual({
+      command: 'slug',
+      page: 'PAGE',
+      slug: 'new-slug',
+      clear: false,
+      url: undefined,
+    });
+    expect(parseArgs(['slug', 'PAGE', '--clear'], noFiles)).toEqual({
+      command: 'slug',
+      page: 'PAGE',
+      slug: undefined,
+      clear: true,
+      url: undefined,
+    });
+    expect(() => parseArgs(['slug', 'PAGE'], noFiles)).toThrow(UsageError);
+    expect(() => parseArgs(['slug'], noFiles)).toThrow(UsageError);
+  });
+
+  it('parses collection subcommands', () => {
+    expect(parseArgs(['collection', 'create', 'my-slug', '--title', 'T', '--style', 'book', '--sort', 'newest', 'a', 'b'], noFiles)).toMatchObject({
+      command: 'collection',
+      action: 'create',
+      positionals: ['my-slug', 'a', 'b'],
+      title: 'T',
+      style: 'book',
+      sort: 'newest',
+    });
+    expect(parseArgs(['collection', 'add', 'c', 'p', '--position', '0'], noFiles)).toMatchObject({
+      command: 'collection',
+      action: 'add',
+      positionals: ['c', 'p'],
+      position: '0',
+    });
+    expect(parseArgs(['collection', 'get', 'c', '--json'], noFiles)).toMatchObject({
+      command: 'collection',
+      action: 'get',
+      positionals: ['c'],
+      json: true,
+    });
+    expect(parseArgs(['collection', 'list'], noFiles)).toMatchObject({ command: 'collection', action: 'list', positionals: [] });
+    expect(() => parseArgs(['collection', 'bogus'], noFiles)).toThrow(UsageError);
+  });
 });

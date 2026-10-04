@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { UsageError } from '../src/core/errors.js';
 import type { PagesStoreData } from '../src/core/pagesStore.js';
-import { resolvePageRef } from '../src/core/reference.js';
+import { resolveCollectionRef, resolvePageRef } from '../src/core/reference.js';
 
 const BASE = 'http://127.0.0.1:4000';
 
@@ -64,5 +64,50 @@ describe('resolvePageRef', () => {
   it('throws UsageError for unresolvable garbage', () => {
     expect(() => resolvePageRef('not a reference!', { base: BASE, store: storeWith() })).toThrow(UsageError);
     expect(() => resolvePageRef('short', { base: BASE, store: storeWith() })).toThrow(UsageError);
+  });
+
+  it('resolves a slug URL as a slug when a key is available', () => {
+    const result = resolvePageRef(`${BASE}/kak-rabotaem`, { base: BASE, store: storeWith(), hasKey: true });
+    expect(result).toMatchObject({ token: 'kak-rabotaem', isSlug: true });
+  });
+
+  it('resolves a .md slug URL as a slug when a key is available', () => {
+    const result = resolvePageRef(`${BASE}/kak-rabotaem.md`, { base: BASE, store: storeWith(), hasKey: true });
+    expect(result).toMatchObject({ token: 'kak-rabotaem', isSlug: true });
+  });
+
+  it('warns on a cross-origin slug URL with a key', () => {
+    const result = resolvePageRef('https://other.example/kak-rabotaem', { base: BASE, store: storeWith(), hasKey: true });
+    expect(result).toMatchObject({ token: 'kak-rabotaem', isSlug: true });
+    expect(result.warning).toMatch(/differs/);
+  });
+
+  it('resolves a slug URL from the local store without a key', () => {
+    const store = storeWith([{ token: 'AbCdEfGh1234', url: `${BASE}/kak-rabotaem` }]);
+    const result = resolvePageRef(`${BASE}/kak-rabotaem`, { base: BASE, store, hasKey: false });
+    expect(result.token).toBe('AbCdEfGh1234');
+    expect(result.isSlug).toBeUndefined();
+  });
+
+  it('throws UsageError for an unmatched slug URL without a key', () => {
+    expect(() => resolvePageRef(`${BASE}/kak-rabotaem`, { base: BASE, store: storeWith(), hasKey: false })).toThrow(UsageError);
+  });
+});
+
+describe('resolveCollectionRef', () => {
+  it('returns a bare slug unchanged', () => {
+    expect(resolveCollectionRef('my-collection')).toBe('my-collection');
+  });
+
+  it('extracts the slug from a collection URL', () => {
+    expect(resolveCollectionRef(`${BASE}/my-collection`)).toBe('my-collection');
+  });
+
+  it('extracts the slug from a .md collection URL', () => {
+    expect(resolveCollectionRef(`${BASE}/my-collection.md`)).toBe('my-collection');
+  });
+
+  it('throws UsageError for an unresolvable collection URL', () => {
+    expect(() => resolveCollectionRef(`${BASE}/p/AbCdEfGh1234`)).toThrow(UsageError);
   });
 });

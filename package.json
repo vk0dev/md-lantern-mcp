@@ -1,6 +1,6 @@
 {
   "name": "@vk0/md-lantern-mcp",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Publish markdown as shareable pages from your AI agent or shell via MCP and the mdl CLI.",
   "mcpName": "io.github.vk0dev/md-lantern-mcp",
   "type": "module",

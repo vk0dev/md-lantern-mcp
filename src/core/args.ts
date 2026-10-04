@@ -2,11 +2,24 @@ import { statSync } from 'node:fs';
 
 import { UsageError } from './errors.js';
 
-const COMMANDS = ['publish', 'update', 'get', 'list', 'versions', 'rm', 'config'] as const;
+const COMMANDS = ['publish', 'update', 'get', 'list', 'versions', 'rm', 'config', 'slug', 'collection'] as const;
 type KnownCommand = (typeof COMMANDS)[number];
 
-const VALUE_FLAGS = new Set(['--title', '--style', '--expires', '--as', '--base-version', '--url', '--limit']);
-const BOOL_FLAGS = new Set(['--breaks', '--json']);
+const VALUE_FLAGS = new Set([
+  '--title',
+  '--style',
+  '--expires',
+  '--as',
+  '--base-version',
+  '--url',
+  '--limit',
+  '--slug',
+  '--collection',
+  '--position',
+  '--intro-file',
+  '--sort',
+]);
+const BOOL_FLAGS = new Set(['--breaks', '--json', '--clear']);
 
 export type FileExistsFn = (path: string) => boolean;
 
@@ -28,6 +41,8 @@ export interface PublishArgs {
   as?: string;
   json: boolean;
   url?: string;
+  slug?: string;
+  collection?: string;
 }
 
 export interface UpdateArgs {
@@ -84,6 +99,30 @@ export interface HelpArgs {
   command: 'help';
 }
 
+export interface SlugArgs {
+  command: 'slug';
+  page: string;
+  slug?: string;
+  clear: boolean;
+  url?: string;
+}
+
+export type CollectionAction = 'create' | 'add' | 'rm' | 'get' | 'list' | 'update' | 'delete';
+
+export interface CollectionArgs {
+  command: 'collection';
+  action: CollectionAction;
+  positionals: string[];
+  title?: string;
+  introFile?: string;
+  style?: string;
+  sort?: string;
+  slug?: string;
+  position?: string;
+  json: boolean;
+  url?: string;
+}
+
 export type ParsedArgs =
   | PublishArgs
   | UpdateArgs
@@ -93,7 +132,9 @@ export type ParsedArgs =
   | RmArgs
   | ConfigArgs
   | VersionArgs
-  | HelpArgs;
+  | HelpArgs
+  | SlugArgs
+  | CollectionArgs;
 
 function isKnownCommand(value: string | undefined): value is KnownCommand {
   return typeof value === 'string' && (COMMANDS as readonly string[]).includes(value);
@@ -155,6 +196,28 @@ export function parseArgs(argv: string[], opts: { fileExists?: FileExistsFn } = 
     return { command: 'config', action, value: rest[1] };
   }
 
+  if (command === 'collection') {
+    const action = rest[0];
+    const actions = ['create', 'add', 'rm', 'get', 'list', 'update', 'delete'];
+    if (!actions.includes(action ?? '')) {
+      throw new UsageError('usage: mdl collection create|add|rm|get|list|update|delete …');
+    }
+    const { flags, bools, positionals } = scan(rest.slice(1));
+    return {
+      command: 'collection',
+      action: action as CollectionAction,
+      positionals,
+      title: flags['--title'],
+      introFile: flags['--intro-file'],
+      style: flags['--style'],
+      sort: flags['--sort'],
+      slug: flags['--slug'],
+      position: flags['--position'],
+      json: !!bools['--json'],
+      url: flags['--url'],
+    };
+  }
+
   const { flags, bools, positionals } = scan(rest);
 
   if (command === 'publish') {
@@ -168,7 +231,20 @@ export function parseArgs(argv: string[], opts: { fileExists?: FileExistsFn } = 
       as: flags['--as'],
       json: !!bools['--json'],
       url: flags['--url'],
+      slug: flags['--slug'],
+      collection: flags['--collection'],
     };
+  }
+
+  if (command === 'slug') {
+    const page = positionals[0];
+    if (page === undefined) throw new UsageError('slug requires a PAGE argument');
+    const clear = !!bools['--clear'];
+    const newSlug = positionals[1];
+    if (!clear && newSlug === undefined) {
+      throw new UsageError('slug requires a SLUG argument or --clear');
+    }
+    return { command: 'slug', page, slug: newSlug, clear, url: flags['--url'] };
   }
 
   if (command === 'update') {

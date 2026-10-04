@@ -5,6 +5,24 @@ All notable changes to `@vk0/md-lantern-mcp` are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-10-04
+
+### Added
+
+- Readable links (slugs): `--slug` on `mdl publish` and the `publish_markdown` tool, a
+  new `mdl slug <page> <slug> | --clear` command, and `slug` on the `update_page` tool
+  (a string sets or renames it, `null` clears it). Requires an API key. Page references
+  (CLI and MCP) now also accept a readable-link URL (`BASE/<slug>`, with or without
+  `.md`).
+- Collections: a named, ordered set of pages with its own readable link. `mdl
+  collection create|add|rm|get|list|update|delete`, `--collection <slug>` on `mdl
+  publish`, and seven MCP tools — `create_collection`, `get_collection`,
+  `list_collections`, `update_collection`, `add_to_collection`, `remove_from_collection`,
+  `delete_collection` — plus `collection` on `publish_markdown`. Requires an API key.
+  Republishing under the same `--as` name does not duplicate collection membership.
+- `GetResult`/page results now pass through `slug` and `coverUrl` when the server sends
+  them.
+
 ## [1.0.0] - 2026-10-04
 
 First public release: a stdio MCP server (`md-lantern-mcp`) and a CLI (`mdl`) for

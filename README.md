@@ -21,9 +21,9 @@ and hand over the URL.
 
 ## What it is
 
-[MD Lantern](https://github.com/vk0dev) is a small, self-hostable markdown publishing
-server (an instance might live at `md.vk0.dev`, or on your own infrastructure). This
-package is the agent-facing client for it:
+[MD Lantern](https://github.com/vk0dev) is a small markdown publishing server — it
+talks to `md.vk0.dev`, or to any MD Lantern instance you run yourself. This package is
+the agent-facing client for it:
 
 - **One link, everywhere** — the page URL unfurls as a rich card in Telegram, Slack, and
   most chat apps, and renders as a normal web page in a browser.
@@ -33,10 +33,14 @@ package is the agent-facing client for it:
 - **Edit in place, with public history** — updating a page keeps its URL working; the
   text it replaces is kept as a version in the page's public history, so nothing is
   silently lost.
+- **Readable links** — an API key can give a page a short link, `BASE/<slug>`, instead
+  of the permanent token URL.
+- **Collections** — a named, ordered set of pages with its own link; publishing into one
+  appends the page, which is how a stream of reports gathers itself over time.
 
 This package ships two bins from one package:
 
-- `md-lantern-mcp` — a stdio MCP server exposing 6 tools to any MCP-capable agent client.
+- `md-lantern-mcp` — a stdio MCP server exposing 13 tools to any MCP-capable agent client.
 - `mdl` — a standalone CLI for shells and scripts.
 
 Both talk to the same MD Lantern HTTP API and share the same local page memory, so a page
@@ -170,7 +174,71 @@ mdl report.md --json
 ```
 
 `<page>` accepts a bare token, a full page URL (with or without `.md`, `/history`, or a
-`/v/<n>` suffix), or a name you bound with `--as`.
+`/v/<n>` suffix), a readable-link URL (`BASE/<slug>`, with or without `.md`), or a name
+you bound with `--as`.
+
+## Readable links
+
+An API key can give a page a short, memorable link instead of the permanent token URL.
+Readable links and collections require an API key — without one these commands fail
+fast with a clear error, nothing gets published.
+
+```bash
+mdl publish report.md --slug how-we-work
+# -> https://md.vk0.dev/how-we-work
+
+# a slug link works as <page> everywhere: get, update, versions, rm, slug
+mdl get https://md.vk0.dev/how-we-work
+mdl update https://md.vk0.dev/how-we-work report-v2.md
+
+# mdl slug sets, renames, or clears a page's readable link; it always prints the link
+mdl slug <page> how-we-work       # set
+mdl slug how-we-work new-slug     # rename (old slug keeps redirecting)
+mdl slug new-slug --clear         # back to the permanent /p/<token> link
+```
+
+The `slug` tool input on `update_page`, and `slug` on `publish_markdown`, do the same
+over MCP:
+
+```json
+{ "tool": "publish_markdown", "arguments": { "markdown": "# Hi\n", "slug": "how-we-work" } }
+{ "tool": "update_page", "arguments": { "page": "<page>", "markdown": "# Hi v2\n", "slug": null } }
+```
+
+## Collections
+
+A collection is a named, ordered set of pages with its own readable link — the way a
+stream of reports (daily status, build summaries) gathers into one browsable place, or a
+multi-part document stays in order.
+
+```bash
+# create a collection, optionally seeded with pages (by URL or local --as name)
+mdl collection create daily-reports --title "Daily reports" --sort newest
+
+# publish straight into it — the page becomes the newest member
+mdl publish report.md --collection daily-reports
+
+# manage membership and metadata
+mdl collection add daily-reports <page> --position 0
+mdl collection rm daily-reports <page>
+mdl collection get daily-reports            # the collection link, then one per page
+mdl collection list                         # one line per collection
+mdl collection update daily-reports --title "Status reports" --slug status
+mdl collection delete daily-reports
+```
+
+The same operations are MCP tools: `create_collection`, `get_collection`,
+`list_collections`, `update_collection`, `add_to_collection`, `remove_from_collection`,
+`delete_collection`, plus `collection` on `publish_markdown`:
+
+```json
+{ "tool": "create_collection", "arguments": { "slug": "daily-reports", "title": "Daily reports", "sort": "newest" } }
+{ "tool": "publish_markdown", "arguments": { "markdown": "# Monday\n", "collection": "daily-reports" } }
+```
+
+`<collection>` accepts a bare slug or a full collection URL; `<page>` accepts a token, a
+URL, or a local `--as` name — local names are resolved on this machine, everything else
+is sent to the server as-is.
 
 ## Config & environment
 
@@ -207,12 +275,19 @@ read a page back, only to manage one.
 
 | Tool | Purpose |
 |---|---|
-| `publish_markdown` | Publish markdown as a new page (or update one bound by `name`) |
-| `update_page` | Edit an existing page in place by token, URL, or name |
+| `publish_markdown` | Publish markdown as a new page (or update one bound by `name`); `slug` and `collection` inputs are available with a key |
+| `update_page` | Edit an existing page in place by token, URL, or name; `slug` sets, renames, or (with `null`) clears its readable link |
 | `get_page` | Read back a page's current markdown and metadata |
 | `list_pages` | List this key's pages, or locally remembered anonymous pages |
 | `delete_page` | Permanently delete a page |
 | `list_versions` | List every kept version of a page, newest first |
+| `create_collection` | Create a named, ordered collection of pages with its own link |
+| `get_collection` | Read a collection and its member pages, in order |
+| `list_collections` | List this key's collections |
+| `update_collection` | Rename, restyle, or reorder a collection |
+| `add_to_collection` | Add one page to a collection, at the end or at a position |
+| `remove_from_collection` | Remove one page from a collection (the page itself is untouched) |
+| `delete_collection` | Permanently delete a collection (member pages are untouched) |
 
 ## Comparison
 
