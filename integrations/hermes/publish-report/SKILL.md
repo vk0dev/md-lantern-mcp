@@ -47,7 +47,7 @@ Publish and send the link if at least one of these holds:
    - `--expires 30d`: **default for a reply in chat**: summaries, status answers, diagnostics, debug dumps. They are read now and are not needed in a month.
      Without `--expires` the page is permanent; that is for documents vk will come back to (a runbook, an analysis he asked to keep, rules, an agreement) and for `--as`.
    - `--as <name>`: **one stable link for a recurring or living document** (e.g. `--as factory-status`, `--as weekly-review`). A repeat call with the same name updates the same page in place. The link stays the same, and earlier versions remain in its public history. `<name>` is lowercase latin, digits and `-`.
-   - `--collection <slug>`: appends the page to an existing collection instead of replacing one page in place — use for a recurring report stream where each entry should stay its own page (e.g. a daily log), browsable together at the collection's own link.
+   - `--collection <slug>`: appends the page to an existing collection instead of replacing one page in place — use for a recurring report stream where each entry should stay its own page (e.g. a daily log), browsable together at the collection's own link. A collection is created once, by the same key: `bash ~/.hermes/skills/productivity/publish-report/scripts/mdl.sh collection create <slug> --title "<Title>"`; only do that when vk asked for a stream.
 3. **Send a short message**: 2–5 lines in Russian. Say what this is, give 1–3 key takeaways (numbers, decisions, what is needed from vk), and put the link on its own line. Copy the URL from the command output exactly, without changing it.
 
 Example message:
