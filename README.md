@@ -1,5 +1,7 @@
 # md-lantern-mcp
 
+English | [日本語](https://github.com/vk0dev/md-lantern-mcp/blob/main/README.ja.md) | [简体中文](https://github.com/vk0dev/md-lantern-mcp/blob/main/README.zh-CN.md) | [Русский](https://github.com/vk0dev/md-lantern-mcp/blob/main/README.ru.md) | [Español](https://github.com/vk0dev/md-lantern-mcp/blob/main/README.es.md)
+
 Publish markdown as a shareable page with a permanent link, from an AI agent or a shell —
 instead of pasting a wall of text into chat.
 
@@ -21,9 +23,9 @@ and hand over the URL.
 
 ## What it is
 
-[MD Lantern](https://github.com/vk0dev) is a small markdown publishing server — it
-talks to `md.vk0.dev`, or to any MD Lantern instance you run yourself. This package is
-the agent-facing client for it:
+MD Lantern is a small markdown publishing service at `md.vk0.dev` (the URL is
+configurable). This package is the agent-facing client for it, and publishing works
+out of the box, no account needed:
 
 - **One link, everywhere** — the page URL unfurls as a rich card in Telegram, Slack, and
   most chat apps, and renders as a normal web page in a browser.
@@ -50,16 +52,16 @@ machine.
 ## Quick start
 
 ```bash
-# with an API key (recommended — lets you list and inspect version history)
-export MD_LANTERN_URL=https://md.vk0.dev
-export MD_LANTERN_API_KEY=mdl_...
-
+# no account, no key: anonymous publish, the same flow the browser composer uses
 echo '# Hello\n\nFrom mdl.' | mdl
 # -> https://md.vk0.dev/p/AbCdEfGh1234
 
-# no key at all also works (anonymous publish, same flow the browser composer uses)
 cat report.md | mdl
 ```
+
+If the operator of your MD Lantern server has issued you an API key, set
+`MD_LANTERN_API_KEY` (or run `mdl config set-key`) to also list your pages and inspect
+version history — see [Key vs. anonymous mode](#key-vs-anonymous-mode).
 
 ## Install
 
@@ -77,7 +79,7 @@ Or add it to `.mcp.json`:
     "md-lantern-mcp": {
       "command": "npx",
       "args": ["-y", "@vk0/md-lantern-mcp"],
-      "env": { "MD_LANTERN_URL": "https://md.vk0.dev", "MD_LANTERN_API_KEY": "mdl_..." }
+      "env": { "MD_LANTERN_URL": "https://md.vk0.dev" }
     }
   }
 }
@@ -93,7 +95,7 @@ Add to `claude_desktop_config.json`:
     "md-lantern-mcp": {
       "command": "npx",
       "args": ["-y", "@vk0/md-lantern-mcp"],
-      "env": { "MD_LANTERN_URL": "https://md.vk0.dev", "MD_LANTERN_API_KEY": "mdl_..." }
+      "env": { "MD_LANTERN_URL": "https://md.vk0.dev" }
     }
   }
 }
@@ -109,7 +111,7 @@ Add to `.cursor/mcp.json`:
     "md-lantern-mcp": {
       "command": "npx",
       "args": ["-y", "@vk0/md-lantern-mcp"],
-      "env": { "MD_LANTERN_URL": "https://md.vk0.dev", "MD_LANTERN_API_KEY": "mdl_..." }
+      "env": { "MD_LANTERN_URL": "https://md.vk0.dev" }
     }
   }
 }
@@ -125,7 +127,7 @@ Add to Cline's MCP settings (`cline_mcp_settings.json`):
     "md-lantern-mcp": {
       "command": "npx",
       "args": ["-y", "@vk0/md-lantern-mcp"],
-      "env": { "MD_LANTERN_URL": "https://md.vk0.dev", "MD_LANTERN_API_KEY": "mdl_..." }
+      "env": { "MD_LANTERN_URL": "https://md.vk0.dev" }
     }
   }
 }
@@ -139,7 +141,7 @@ Add to `~/.codex/config.toml`:
 [mcp_servers.md-lantern-mcp]
 command = "npx"
 args = ["-y", "@vk0/md-lantern-mcp"]
-env = { "MD_LANTERN_URL" = "https://md.vk0.dev", "MD_LANTERN_API_KEY" = "mdl_..." }
+env = { "MD_LANTERN_URL" = "https://md.vk0.dev" }
 ```
 
 ### CLI only
@@ -180,8 +182,8 @@ you bound with `--as`.
 ## Readable links
 
 An API key can give a page a short, memorable link instead of the permanent token URL.
-Readable links and collections require an API key — without one these commands fail
-fast with a clear error, nothing gets published.
+Readable links and collections require an API key issued by the server operator —
+without one these commands fail fast with a clear error, nothing gets published.
 
 ```bash
 mdl publish report.md --slug how-we-work
@@ -293,7 +295,6 @@ read a page back, only to manage one.
 
 | | md-lantern-mcp | Gist | rentry.co | telegra.ph | Pasting into chat |
 |---|---|---|---|---|---|
-| Self-hosted | ✅ | ❌ | ❌ | ❌ | n/a |
 | Agent-native (MCP tools) | ✅ | ❌ | ❌ | ❌ | n/a |
 | Raw `.md` twin | ✅ | ✅ | ❌ | ❌ | ❌ |
 | Edit in place, same URL | ✅ | ✅ | ✅ | ❌ | ❌ |
@@ -309,8 +310,9 @@ there's no access control beyond the link itself. Don't publish secrets.
 the browser composer uses. You get a local-only "manage token" instead of key ownership,
 remembered in `pages.json` on the machine that published it.
 
-**Can I run my own MD Lantern server?** Yes — that's the point. Point `MD_LANTERN_URL`
-(or `mdl config set-url`) at any MD Lantern instance you operate.
+**Can I point it at a different MD Lantern server?** Yes — the server URL is
+configurable. Set `MD_LANTERN_URL` (or run `mdl config set-url`) and the client talks to
+any compatible MD Lantern server you have access to.
 
 **Does updating a page break the old link?** No — `update_page` / `mdl update` edit the
 page in place. The URL stays the same; the replaced text becomes a version in the page's
