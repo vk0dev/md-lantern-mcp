@@ -10,7 +10,7 @@
 - Test: `npm test`
 - Lint: `npm run lint`
 - Smoke test: `npm run smoke`
-- Operator acceptance (real MD Lantern server on a loopback port): `npm run build && node scripts/acceptance.mjs`
+- Operator acceptance (real MD Lantern server on a loopback port; needs an MD Lantern checkout, `MDL_REPO=<path>`): `npm run build && MDL_REPO=<path> node scripts/acceptance.mjs`
 - Operator acceptance for readable links/collections (needs an MD Lantern checkout with collections, i.e. `MDL_REPO=<path>`): `npm run build && MDL_REPO=<path> node scripts/acceptance-1.1.mjs`
 
 ## Publishing

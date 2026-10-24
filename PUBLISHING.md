@@ -51,11 +51,14 @@ These steps need the repository owner; an agent stops and asks.
 
 1. Create the public repository `vk0dev/md-lantern-mcp` and push (provenance requires a
    public repository).
-2. Create a granular **automation** token on npmjs.com that can publish the `@vk0`
+2. Create a granular access token with publish rights on npmjs.com that can publish the `@vk0`
    scope, and add it in GitHub → Settings → Secrets as `NPM_TOKEN`. Enter it by hand;
    do not script it from a local file.
-3. Enable GitHub Pages: Settings → Pages → Source: **GitHub Actions**, before the first
-   `pages.yml` run (`pages.yml` can also be started via `workflow_dispatch`).
+3. Enable GitHub Pages: Settings → Pages → Source: **GitHub Actions**. The first push
+   triggers `pages.yml` before Pages is enabled and that run fails; re-run it via
+   `workflow_dispatch` once Pages is on, before tagging the first release (`post-release-verify`
+   treats a missing landing page as a failure). If the Registry step fails on a release,
+   `registry-republish.yml` can republish it.
 4. Optional: add repository topics (`mcp`, `mcp-server`, `claude-code`, `anthropic`,
    `developer-tools`).
 5. Marketplace first submissions (manual): Awesome MCP Servers (fork + PR), mcp.so and
@@ -75,5 +78,5 @@ from this repository's workflow; no secret is needed.
 
 | Secret | Required | Source |
 |--------|----------|--------|
-| `NPM_TOKEN` | yes | npmjs.com → Access Tokens (granular automation token) |
+| `NPM_TOKEN` | yes | npmjs.com → Access Tokens (granular token with publish rights; note its expiry and rotate it) |
 | `SMITHERY_API_KEY` | no | smithery.ai → Account → API Keys; only used for the warn-only Smithery check in `post-release-verify` |

@@ -33,7 +33,7 @@ desde el primer momento, sin necesidad de cuenta:
   (`<url>.md`), que `mdl get` o la herramienta `get_page` leen byte por byte, sin
   necesidad de scraping.
 - **Edición en su lugar, con historial público**: actualizar una página mantiene su URL funcionando; el
-  texto que reemplaza se conserva como una versión en el historial público de la página, así que nada
+  texto reemplazado se conserva como una versión en el historial público de la página, así que nada
   se pierde en silencio.
 - **Enlaces legibles**: una clave de API puede dar a una página un enlace corto, `BASE/<slug>`, en lugar
   de la URL permanente con token.

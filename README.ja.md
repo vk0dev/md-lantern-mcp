@@ -240,7 +240,7 @@ mdl collection delete daily-reports
 
 ## 設定と環境変数
 
-| 設定 | 優先順位(上が優先) |
+| 設定 | 優先順位(左が優先) |
 |---|---|
 | サーバー URL | `--url`(CLI のみ) → `MD_LANTERN_URL` → `config.json` → `https://md.vk0.dev` |
 | API キー | `MD_LANTERN_API_KEY` → `config.json` → なし(匿名) |
