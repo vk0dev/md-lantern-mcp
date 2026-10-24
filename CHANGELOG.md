@@ -23,6 +23,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `GetResult`/page results now pass through `slug` and `coverUrl` when the server sends
   them.
 
+### Changed
+
+- Dependencies updated to clear `npm audit` advisories: `@modelcontextprotocol/sdk`
+  ^1.32.2, `zod` ^4.6.7, `vitest` ^4.1.12. Tool names and input fields are unchanged;
+  validation error messages now use zod 4's wording.
+
 ## [1.0.0] - 2026-10-04
 
 First public release: a stdio MCP server (`md-lantern-mcp`) and a CLI (`mdl`) for

@@ -1,20 +1,21 @@
 # Publishing Playbook
 
 How to release updates and manage marketplace presence for `@vk0/md-lantern-mcp`.
-This document is for **any agent** (Claude Code, OpenClaw, Cursor, Cline, or manual).
+This document is for **any agent** (Claude Code, Cursor, Cline, or manual).
 
 ---
 
 ## Releasing an update
 
 ```bash
-# 1. Version bump — sync in 4 places:
-#    package.json, .claude-plugin/plugin.json, server.json, src/createServer.ts
+# 1. Version bump — syncs 4 places (package.json, .claude-plugin/plugin.json,
+#    server.json, src/createServer.ts):
+npm run version-sync X.Y.Z
 
 # 2. Update CHANGELOG.md
 
 # 3. Verify
-npm run build && npm test && npm run lint && npm run smoke
+npm run build && npm test && npm run lint && npm run smoke && npm run release-check
 
 # 4. Commit + tag + push
 git add -A
@@ -23,39 +24,48 @@ git tag -a vX.Y.Z -m "vX.Y.Z"
 git push origin main --follow-tags
 ```
 
-CI does the rest: npm publish, GitHub Release, Official MCP Registry, Smithery.
+Pushing the tag starts `publish.yml`, which re-runs the gates (version sync, tag equals
+`package.json` version, lint, build, tests, smoke, `release-check`) and only then publishes.
 
-## What updates automatically
+## What the pipeline does
 
-| Platform | Mechanism | Delay |
-|----------|-----------|-------|
-| **npm** | CI `publish.yml` on tag `v*` | ~1 min |
-| **GitHub Release** | CI auto | ~1 min |
-| **GitHub Pages** | CI `pages.yml` | ~2 min |
-| **Official MCP Registry** | CI `publish.yml` step | ~1 min |
-| **Smithery** | CI `publish.yml` step | ~1 min |
-| **PulseMCP** | Auto from Registry | 1-7 days |
-| **Glama / MseeP / MCPServers.org** | Auto-scraping npm | 24-48h |
+| Target | Mechanism | Needs |
+|--------|-----------|-------|
+| **npm** | `publish.yml` on tag `v*`: `npm publish --access public --provenance` | `NPM_TOKEN` secret, `id-token: write` (provenance) |
+| **GitHub Release** | `publish.yml` (generated notes) | — |
+| **GitHub Pages** | `pages.yml` deploys `docs/` on changes to `docs/**` | Pages enabled once, source "GitHub Actions" |
+| **Official MCP Registry** | `publish.yml` via `mcp-publisher login github-oidc` | no secret (GitHub OIDC); the step is `continue-on-error` |
+| **Post-release verify** | `scripts/post-release-verify.mjs` checks npm, Registry and Pages | fails the workflow if a target did not land |
 
-**Manual steps: ZERO.** Push tag → everything updates.
+Smithery is **not** published by CI. A listing for a stdio npm server is created once,
+manually, at smithery.ai (OAuth). `post-release-verify` only checks it as a warning, and
+only when the optional `SMITHERY_API_KEY` secret is set.
 
-## First release setup
+Directories such as PulseMCP, Glama, MseeP and MCPServers.org may pick the package up
+from the Official MCP Registry or npm on their own. There is no guarantee and no fixed
+delay; check them by hand and submit manually if a listing does not appear.
 
-```bash
-# One-time setup for a new project:
-gh repo create vk0dev/md-lantern-mcp --public --source=. --push
-gh secret set NPM_TOKEN --repo vk0dev/md-lantern-mcp --body $(grep _authToken ~/.npmrc | cut -d= -f2)
-gh secret set SMITHERY_API_KEY --repo vk0dev/md-lantern-mcp --body <smithery-key>
-gh api repos/vk0dev/md-lantern-mcp/pages -X POST -f build_type=workflow
-gh api repos/vk0dev/md-lantern-mcp/topics -X PUT \
-  -f "names[]=mcp" -f "names[]=mcp-server" -f "names[]=claude-code" \
-  -f "names[]=anthropic" -f "names[]=developer-tools"
+## First release setup (owner actions)
 
-# Marketplace first submissions:
-# - Awesome MCP Servers: fork + PR via gh CLI
-# - mcp.so: submit form (GitHub OAuth)
-# - Others: auto-discovery from npm keywords
-```
+These steps need the repository owner; an agent stops and asks.
+
+1. Create the public repository `vk0dev/md-lantern-mcp` and push (provenance requires a
+   public repository).
+2. Create a granular access token with publish rights on npmjs.com that can publish the `@vk0`
+   scope, and add it in GitHub → Settings → Secrets as `NPM_TOKEN`. Enter it by hand;
+   do not script it from a local file.
+3. Enable GitHub Pages: Settings → Pages → Source: **GitHub Actions**. The first push
+   triggers `pages.yml` before Pages is enabled and that run fails; re-run it via
+   `workflow_dispatch` once Pages is on, before tagging the first release (`post-release-verify`
+   treats a missing landing page as a failure). If the Registry step fails on a release,
+   `registry-republish.yml` can republish it.
+4. Optional: add repository topics (`mcp`, `mcp-server`, `claude-code`, `anthropic`,
+   `developer-tools`).
+5. Marketplace first submissions (manual): Awesome MCP Servers (fork + PR), mcp.so and
+   Smithery (forms with GitHub OAuth).
+
+The Official MCP Registry namespace `io.github.vk0dev` is authenticated by GitHub OIDC
+from this repository's workflow; no secret is needed.
 
 ## Version sync locations
 
@@ -64,15 +74,9 @@ gh api repos/vk0dev/md-lantern-mcp/topics -X PUT \
 3. `server.json` → `"version"` (two places: root + packages[0])
 4. `src/createServer.ts` → `version:` string
 
-## Required GitHub Secrets
+## GitHub Secrets
 
-| Secret | Source |
-|--------|--------|
-| `NPM_TOKEN` | `~/.npmrc` or npmjs.com → Access Tokens |
-| `SMITHERY_API_KEY` | smithery.ai → Account → API Keys |
-
-## Required GitHub Variables
-
-| Variable | Value |
-|----------|-------|
-| `SMITHERY_SERVER_NAME` | `unfucker/md-lantern-mcp` (your Smithery namespace/name) |
+| Secret | Required | Source |
+|--------|----------|--------|
+| `NPM_TOKEN` | yes | npmjs.com → Access Tokens (granular token with publish rights; note its expiry and rotate it) |
+| `SMITHERY_API_KEY` | no | smithery.ai → Account → API Keys; only used for the warn-only Smithery check in `post-release-verify` |

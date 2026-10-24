@@ -25,6 +25,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Dependency audit (high/critical)
+        run: npm audit --audit-level=high
+
       - name: Version sync check (package.json / plugin.json / server.json / createServer.ts)
         run: node scripts/version-sync.mjs --check
 
