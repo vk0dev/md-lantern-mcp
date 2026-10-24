@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 // Operator acceptance for md-lantern-mcp (written before the implementation card).
 //
-// Starts a real md-lantern server from a checkout (MDL_REPO, default the dev clone) on a
+// Starts a real md-lantern server from a checkout (MDL_REPO, required) on a
 // free loopback port against a throwaway data dir, mints API keys with its real key CLI,
 // and drives the built package end to end: the `mdl` CLI as a child process, and the MCP
 // server over stdio through the official SDK client. Stops only the processes it started.
 //
-//   npm run build && node scripts/acceptance.mjs
+//   npm run build && MDL_REPO=<path to an MD Lantern checkout> node scripts/acceptance.mjs
 //
 import { spawn } from 'node:child_process';
 import fs from 'node:fs';
@@ -16,7 +16,11 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const PKG_DIR = path.resolve(HERE, '..');
-const MDL_REPO = path.resolve(process.env.MDL_REPO || '/Users/vkdev/projects/md-lantern-dev');
+if (!process.env.MDL_REPO) {
+  console.error('Set MDL_REPO=<path to an MD Lantern server checkout> to run this acceptance script.');
+  process.exit(2);
+}
+const MDL_REPO = path.resolve(process.env.MDL_REPO);
 const lib = await import(pathToFileURL(path.join(MDL_REPO, 'scripts/acceptance/_lib.mjs')).href);
 const { ok, step, report, startServer, mintKey, freePort, raw } = lib;
 
