@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>md-lantern-mcp — publish markdown as a shareable link from your AI agent or shell</title>
+<meta name="description" content="MCP server and mdl CLI that publish markdown as a shareable page with a permanent link. 13 tools for Claude Code, Claude Desktop, Cursor, Cline and Codex. No account needed.">
+<link rel="canonical" href="https://vk0dev.github.io/md-lantern-mcp/">
+<meta property="og:title" content="md-lantern-mcp">
+<meta property="og:description" content="Publish markdown as a shareable link — from your AI agent (MCP) or your shell (mdl CLI).">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://vk0dev.github.io/md-lantern-mcp/">
+<style>
+  :root {
+    --bg: #fbfaf7; --fg: #1d1c1a; --muted: #66625b; --card: #ffffff; --line: #e6e2d9;
+    --accent: #c2410c; --accent-fg: #ffffff; --code-bg: #f1eee6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141311; --fg: #f1eee6; --muted: #a29d92; --card: #1c1b18; --line: #2e2c27;
+      --accent: #fb923c; --accent-fg: #1a1209; --code-bg: #232119;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 17px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  main { max-width: 860px; margin: 0 auto; padding: 0 20px 48px; }
+  header { padding: 72px 0 32px; }
+  h1 { font-size: clamp(2rem, 5vw, 3rem); line-height: 1.15; margin: 0 0 16px; letter-spacing: -0.02em; }
+  h2 { font-size: 1.35rem; margin: 48px 0 12px; }
+  p { margin: 0 0 14px; }
+  .lead { font-size: 1.2rem; color: var(--muted); max-width: 640px; }
+  .cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+  .btn {
+    display: inline-block; padding: 10px 18px; border-radius: 10px; text-decoration: none;
+    font-weight: 600; border: 1px solid var(--line); color: var(--fg); background: var(--card);
+  }
+  .btn.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+  pre, code { font: 0.92em/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  pre {
+    background: var(--code-bg); border: 1px solid var(--line); border-radius: 10px;
+    padding: 14px 16px; overflow-x: auto; margin: 0 0 14px;
+  }
+  :not(pre) > code { background: var(--code-bg); padding: 2px 6px; border-radius: 6px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; }
+  .card h3 { margin: 0 0 6px; font-size: 1.05rem; }
+  .card p { margin: 0; color: var(--muted); font-size: 0.97rem; }
+  a { color: var(--accent); }
+  footer { border-top: 1px solid var(--line); margin-top: 56px; padding-top: 20px; color: var(--muted); font-size: 0.93rem; }
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>md-lantern-mcp</h1>
+    <p class="lead">Publish markdown as a shareable link — from your AI agent (MCP) or your shell (<code>mdl</code> CLI). Send a link instead of a wall of text.</p>
+    <div class="cta">
+      <a class="btn primary" href="https://www.npmjs.com/package/@vk0/md-lantern-mcp">npm package</a>
+      <a class="btn" href="https://github.com/vk0dev/md-lantern-mcp">GitHub</a>
+    </div>
+  </header>
+
+  <section aria-labelledby="install">
+    <h2 id="install">Install</h2>
+    <p>Run the MCP server with no setup:</p>
+    <pre><code>npx -y @vk0/md-lantern-mcp</code></pre>
+    <p>Or install the <code>mdl</code> CLI globally:</p>
+    <pre><code>npm i -g @vk0/md-lantern-mcp
+echo '# Hello' | mdl</code></pre>
+    <p>Add it to your MCP client (Claude Code, Claude Desktop, Cursor, Cline):</p>
+    <pre><code>{
+  "mcpServers": {
+    "md-lantern-mcp": {
+      "command": "npx",
+      "args": ["-y", "@vk0/md-lantern-mcp"]
+    }
+  }
+}</code></pre>
+    <p>Claude Code one-liner: <code>claude mcp add md-lantern-mcp -- npx -y @vk0/md-lantern-mcp</code></p>
+  </section>
+
+  <section aria-labelledby="why">
+    <h2 id="why">Why use it</h2>
+    <div class="grid">
+      <div class="card"><h3>One link, everywhere</h3><p>The page URL unfurls as a rich card in Telegram, Slack and most chat apps, and renders as a normal web page in a browser.</p></div>
+      <div class="card"><h3>A .md twin for the next agent</h3><p>Every page also serves its raw markdown, read back byte-for-byte by <code>mdl get</code> or the <code>get_page</code> tool.</p></div>
+      <div class="card"><h3>Edit in place</h3><p>Update a page and its URL keeps working. Replaced text is kept in the page's public version history.</p></div>
+      <div class="card"><h3>No account needed</h3><p>Publish anonymously out of the box. Pages are public to anyone with the link, so don't publish secrets.</p></div>
+      <div class="card"><h3>13 MCP tools</h3><p>Publish, update, read, list and delete pages, list versions, and manage collections of pages.</p></div>
+      <div class="card"><h3>MCP and CLI in one package</h3><p>The <code>md-lantern-mcp</code> server and the <code>mdl</code> CLI share the same local page memory.</p></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="usage">
+    <h2 id="usage">Use it from the shell</h2>
+<pre><code>cat report.md | mdl
+# -> https://md.vk0.dev/p/AbCdEfGh1234
+
+# same name, same page: the second publish updates it in place
+mdl --as daily-status status.md</code></pre>
+    <p>If your server operator has issued you an API key, you also get readable links (<code>BASE/&lt;slug&gt;</code>) and collections. Full reference in the <a href="https://github.com/vk0dev/md-lantern-mcp#readme">README</a>, available in English, 日本語, 简体中文, Русский and Español.</p>
+  </section>
+
+  <footer>
+    MIT © vk0.dev · <a href="https://github.com/vk0dev/md-lantern-mcp">GitHub</a> · <a href="https://www.npmjs.com/package/@vk0/md-lantern-mcp">npm</a>
+  </footer>
+</main>
+</body>
+</html>
